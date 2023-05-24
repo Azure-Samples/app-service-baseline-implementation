@@ -1,0 +1,14 @@
+﻿@model List<string> 
+
+@{
+    ViewData["Title"] = "Database test";
+}
+<h1>@ViewData["Title"]</h1>
+
+<p>Categories</p>
+
+@foreach (var category in Model)
+{
+    <li>@category</li>    
+}
+
