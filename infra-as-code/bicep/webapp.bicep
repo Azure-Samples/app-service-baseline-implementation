@@ -2,8 +2,12 @@
   Deploy a web app with a managed identity, diagnostic, and a private endpoint
 */
 
+@description('This is the base name for each Azure resource name (6-12 chars)')
 param baseName string
+
+@description('The resource group location')
 param location string = resourceGroup().location
+
 param developmentEnvironment bool
 param publishFileName string
 
@@ -40,7 +44,7 @@ var appServicesDnsZoneName = 'privatelink.azurewebsites.net'
 var appServicesDnsGroupName = '${appServicePrivateEndpointName}/default'
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   name: vnetName
 
   resource appServicesSubnet 'subnets' existing = {
@@ -51,26 +55,26 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
   }    
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' existing =  {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing =  {
   name: keyVaultName
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' existing =  {
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' existing =  {
   name: storageName
 }
 
-resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' existing = {
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
   name: logWorkspaceName
 }
 
 // Built-in Azure RBAC role that is applied to a Key Vault to grant secrets content read permissions. 
-resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
 
 // Built-in Azure RBAC role that is applied to a Key storage to grant data reader permissions. 
-resource blobDataReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-preview' existing = {
+resource blobDataReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
   name: '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1'
   scope: subscription()
 }
@@ -78,13 +82,13 @@ resource blobDataReaderRole 'Microsoft.Authorization/roleDefinitions@2018-01-01-
 // ---- Web App resources ----
 
 // Managed Identity for App Service
-resource appServiceManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' = {
+resource appServiceManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
   name: appServiceManagedIdentityName
   location: location
 }
 
 // Grant the App Service managed identity key vault secrets role permissions
-resource appServiceManagedIdentitySecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-10-01-preview' = {
+resource appServiceManagedIdentitySecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: keyVault
   name: guid(resourceGroup().id, appServiceManagedIdentity.name, keyVaultSecretsUserRole.id)
   properties: {
@@ -95,7 +99,7 @@ resource appServiceManagedIdentitySecretsUserRoleAssignment 'Microsoft.Authoriza
 }
 
 // Grant the App Service managed identity storage data reader role permissions
-resource blobDataReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource blobDataReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: storage
   name: guid(resourceGroup().id, appServiceManagedIdentity.name, blobDataReaderRole.id)
   properties: {
@@ -106,7 +110,7 @@ resource blobDataReaderRoleAssignment 'Microsoft.Authorization/roleAssignments@2
 }
 
 //App service plan
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2022-09-01' = {
   name: appServicePlanName
   location: location
   sku: developmentEnvironment ? appServicePlanSettings[appServicePlanStandardSku] : appServicePlanSettings[appServicePlanPremiumSku]
@@ -117,7 +121,7 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
 }
 
 // Web App
-resource webApp 'Microsoft.Web/sites@2021-01-01' = {
+resource webApp 'Microsoft.Web/sites@2022-09-01' = {
   name: appName
   location: location
   kind: 'app'
@@ -143,7 +147,7 @@ resource webApp 'Microsoft.Web/sites@2021-01-01' = {
 }
 
 // App Settings
-resource appsettings 'Microsoft.Web/sites/config@2022-03-01' = {
+resource appsettings 'Microsoft.Web/sites/config@2022-09-01' = {
   name: 'appsettings'
   parent: webApp
   properties: {
@@ -156,7 +160,7 @@ resource appsettings 'Microsoft.Web/sites/config@2022-03-01' = {
   }
 }
 
-resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-01-01' = {
+resource appServicePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
   name: appServicePrivateEndpointName
   location: location
   properties: {
@@ -195,7 +199,7 @@ resource appServiceDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetwork
   }
 }
 
-resource appServiceDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2021-05-01' = {
+resource appServiceDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-11-01' = {
   name: appServicesDnsGroupName
   properties: {
     privateDnsZoneConfigs: [
@@ -214,7 +218,7 @@ resource appServiceDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZo
 
 // App service plan diagnostic settings
 resource appServicePlanDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: appServicePlan.name
+  name: '${appServicePlan.name}-diagnosticSettings'
   scope: appServicePlan
   properties: {
     workspaceId: logWorkspace.id
@@ -233,7 +237,7 @@ resource appServicePlanDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-
 
 //Web App diagnostic settings
 resource webAppDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
-  name: webApp.name
+  name: '${webApp.name}-diagnosticSettings'
   scope: webApp
   properties: {
     workspaceId: logWorkspace.id
@@ -281,7 +285,7 @@ resource webAppDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
 
 // App service plan auto scale settings
 resource appServicePlanAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2022-10-01' = {
-  name: appServicePlan.name
+  name: '${appServicePlan.name}-autoscale'
   location: location
   properties: {
     enabled: true
@@ -335,6 +339,8 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   }
 }
 
-output appServicePlanName string = appServicePlan.name 
-output appName string = webApp.name
+@description('The name of the app service plan.')
+output appServicePlanName string = appServicePlan.name
 
+@description('The name of the web app.')
+output appName string = webApp.name

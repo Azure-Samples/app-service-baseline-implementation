@@ -13,7 +13,7 @@ param sqlAdministratorLogin string
 @secure()
 param sqlAdministratorLoginPassword string
 
-@description('Domain name to use for App Gateway and App service')
+@description('Domain name to use for App Gateway')
 param customDomainName string = 'contoso.com'
 
 @description('The certificate data for app gateway TLS termination. The value is base64 encoded')
@@ -32,7 +32,7 @@ var logWorkspaceName = 'log-${baseName}'
 
 
 // ---- Log Analytics workspace ----
-resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: logWorkspaceName
   location: location
   properties: {

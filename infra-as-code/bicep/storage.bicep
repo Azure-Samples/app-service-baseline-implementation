@@ -2,7 +2,10 @@
   Deploy storage account with private endpoint and private DNS zone
 */
 
+@description('This is the base name for each Azure resource name (6-12 chars)')
 param baseName string
+
+@description('The resource group location')
 param location string = resourceGroup().location
 
 // existing resource name params 
@@ -17,17 +20,7 @@ var storagePrivateEndpointName = 'pep-${storageName}'
 var blobStorageDnsZoneName = 'privatelink.blob.${environment().suffixes.storage}'
 
 // ---- Existing resources ----
-/*
-resource vnet 'Microsoft.Network/virtualNetworks@2022-01-01' existing =  {
-  name: vnetName
-}
-
-resource privateEndpointsSubnet 'Microsoft.Network/virtualNetworks/subnets@2022-07-01' existing =  {
-  name: privateEndpointsSubnetName
-  parent: vnet
-}
-*/
-resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   name: vnetName
 
   resource privateEndpointsSubnet 'subnets' existing = {
@@ -35,9 +28,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
   }  
 }
 
-
 // ---- Storage resources ----
-resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   name: storageName
   location: location
   sku: {
@@ -67,7 +59,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-09-01' = {
   }
 }
 
-resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-01-01' = {
+resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
   name: storagePrivateEndpointName
   location: location
   properties: {
@@ -106,7 +98,7 @@ resource storageDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 
-resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2021-05-01' = {
+resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-11-01' = {
   name: storageDnsGroupName
   properties: {
     privateDnsZoneConfigs: [
@@ -123,4 +115,5 @@ resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneG
   ]
 }
 
+@description('The name of the storage account.')
 output storageName string = storage.name

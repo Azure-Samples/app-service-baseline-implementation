@@ -2,8 +2,12 @@
   Deploy vnet with subnets and NSGs
 */
 
+@description('This is the base name for each Azure resource name (6-12 chars)')
 param baseName string
+
+@description('The resource group location')
 param location string = resourceGroup().location
+
 param developmentEnvironment bool
 
 // variables
@@ -16,19 +20,19 @@ var appServicesSubnetPrefix = '10.0.0.0/24'
 var privateEndpointsSubnetPrefix = '10.0.2.0/27'
 
 //Temp disable DDoS protection
-var enableDdosProtection = !developmentEnvironment && false
+var enableDdosProtection = !developmentEnvironment
 
 // ---- Networking resources ----
 
 // DDoS Protection Plan
-resource ddosProtectionPlan 'Microsoft.Network/ddosProtectionPlans@2022-07-01' = if (enableDdosProtection) {
+resource ddosProtectionPlan 'Microsoft.Network/ddosProtectionPlans@2022-11-01' = if (enableDdosProtection) {
   name: ddosPlanName
   location: location
   properties: {}
 }
 
 //vnet and subnets
-resource vnet 'Microsoft.Network/virtualNetworks@2022-01-01' = {
+resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' = {
   name: vnetName
   location: location
   properties: {
@@ -76,7 +80,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-01-01' = {
         properties: {
           addressPrefix: privateEndpointsSubnetPrefix
           networkSecurityGroup: {
-            id: privateEnpointsSubnetNsg.id
+            id: privateEndpointsSubnetNsg.id
           }
         }
 
@@ -98,7 +102,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-01-01' = {
 }
 
 //App Gateway subnet NSG
-resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
+resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   name: 'nsg-appGatewaySubnet'
   location: location
   properties: {
@@ -178,7 +182,7 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01
 }
 
 //App service subnet nsg
-resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
+resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   name: 'nsg-appServicesSubnet'
   location: location
   properties: {
@@ -216,13 +220,20 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01
 }
 
 //Private endpoints subnets NSG
-resource privateEnpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2020-07-01' = {
+resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   name: 'nsg-privateEndpointsSubnet'
   location: location
   properties: {}
 }
 
+@description('The name of the vnet.')
 output vnetNName string = vnet.name
+
+@description('The name of the app service plan subnet.')
 output appServicesSubnetName string = vnet::appServiceSubnet.name
+
+@description('The name of the app gatewaysubnet.')
 output appGatewaySubnetName string = vnet::appGatewaySubnet.name
+
+@description('The name of the private endpoints subnet.')
 output privateEndpointsSubnetName string = vnet::privateEnpointsSubnet.name

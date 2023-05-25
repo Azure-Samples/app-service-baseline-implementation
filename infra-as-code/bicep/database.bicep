@@ -1,8 +1,10 @@
 /*
   Deploy a SQL server with a sample database, a private endpoint and a private DNS zone
 */
-
+@description('This is the base name for each Azure resource name (6-12 chars)')
 param baseName string
+
+@description('The resource group location')
 param location string = resourceGroup().location
 
 @description('The administrator username of the SQL server')
@@ -24,7 +26,7 @@ var sqlDnsZoneName = 'privatelink${environment().suffixes.sqlServerHostname}'
 var sqlConnectionString = 'Server=tcp:${sqlServerName}${environment().suffixes.sqlServerHostname},1433;Initial Catalog=${sampleSqlDatabaseName};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   name: vnetName
 
   resource privateEndpointsSubnet 'subnets' existing = {
@@ -35,7 +37,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
 // ---- Sql resources ----
 
 // sql server
-resource sqlServer 'Microsoft.Sql/servers@2021-11-01-preview' = {
+resource sqlServer 'Microsoft.Sql/servers@2021-11-01' = {
   name: sqlServerName
   location: location
   tags: {
@@ -50,7 +52,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-11-01-preview' = {
 }
 
 //database
-resource slqDatabase 'Microsoft.Sql/servers/databases@2021-11-01-preview' = {
+resource slqDatabase 'Microsoft.Sql/servers/databases@2021-11-01' = {
   name: sampleSqlDatabaseName
   parent: sqlServer
   location: location
@@ -70,7 +72,7 @@ resource slqDatabase 'Microsoft.Sql/servers/databases@2021-11-01-preview' = {
   }
 }
 
-resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-01-01' = {
+resource sqlServerPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
   name: sqlPrivateEndpointName
   location: location
   properties: {
@@ -109,7 +111,7 @@ resource sqlServerDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
   properties: {}
 }
 
-resource sqlServerDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2021-05-01' = {
+resource sqlServerDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-11-01' = {
   name: sqlDnsGroupName
   properties: {
     privateDnsZoneConfigs: [
@@ -126,4 +128,5 @@ resource sqlServerDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZon
   ]
 }
 
+@description('The connection string to the sample database.')
 output sqlConnectionString string = sqlConnectionString

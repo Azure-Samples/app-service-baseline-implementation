@@ -2,8 +2,12 @@
   Deploy a Key Vault with a private endpoint and DNS zone
 */
 
+@description('This is the base name for each Azure resource name (6-12 chars)')
 param baseName string
+
+@description('The resource group location')
 param location string = resourceGroup().location
+
 @description('The certificate data for app gateway TLS termination. The value is base64 encoded')
 @secure()
 param appGatewayListenerCertificate string
@@ -20,7 +24,7 @@ var keyVaultDnsGroupName = '${keyVaultPrivateEndpointName}/default'
 var keyVaultDnsZoneName = 'privatelink.vaultcore.azure.net' //Cannot use 'privatelink${environment().suffixes.keyvaultDns}', per https://github.com/Azure/bicep/issues/9708
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   name: vnetName
 
   resource privateEndpointsSubnet 'subnets' existing = {
@@ -29,7 +33,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' existing =  {
 }
 
 // ---- Key Vault resources ----
-resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' = {
+resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' = {
   name: keyVaultName
   location: location
   properties: {
@@ -37,6 +41,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' = {
     enabledForDiskEncryption: false
     enabledForTemplateDeployment: false
     enableRbacAuthorization: true
+    enableSoftDelete: true
     tenantId: tenant().tenantId
     sku: {
       name: 'standard'
@@ -56,7 +61,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2021-04-01-preview' = {
   }
 }
 
-resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-01-01' = {
+resource keyVaultPrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
   name: keyVaultPrivateEndpointName
   location: location
   properties: {
@@ -95,7 +100,7 @@ resource keyVaultDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLi
   }
 }
 
-resource keyVaultDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2021-05-01' = {
+resource keyVaultDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-11-01' = {
   name: keyVaultDnsGroupName
   properties: {
     privateDnsZoneConfigs: [
@@ -112,7 +117,7 @@ resource keyVaultDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZone
   ]
 }
 
-resource sqlConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2021-04-01-preview' = {
+resource sqlConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2023-02-01' = {
   parent: keyVault
   name: 'adWorksConnString'
   properties: {
@@ -120,5 +125,8 @@ resource sqlConnectionStringSecret 'Microsoft.KeyVault/vaults/secrets@2021-04-01
   }
 }
 
+@description('The name of the key vault account.')
 output keyVaultName string= keyVault.name
+
+@description('Uri to the secret holding the cert.')
 output gatewayCertSecretUri string = keyVault::kvsGatewayPublicCert.properties.secretUri
