@@ -318,6 +318,10 @@ resource appServicePlanAutoScaleSettings 'Microsoft.Insights/autoscalesettings@2
       }
     ]
   }
+  dependsOn: [
+    webApp
+    appServicePlanDiagSettings
+  ]
 }
 
 // create application insights resource
