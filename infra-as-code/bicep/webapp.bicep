@@ -88,13 +88,12 @@ resource appServiceManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
 }
 
 // Grant the App Service managed identity key vault secrets role permissions
-resource appServiceManagedIdentitySecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: keyVault
-  name: guid(resourceGroup().id, appServiceManagedIdentity.name, keyVaultSecretsUserRole.id)
-  properties: {
+module appServiceSecretsUserRoleAssignmentModule '../modules/keyvaultRoleAssignment.bicep' = {
+  name: 'appServiceSecretsUserRoleAssignmentDeploy'
+  params: {
     roleDefinitionId: keyVaultSecretsUserRole.id
-    principalType: 'ServicePrincipal'
     principalId: appServiceManagedIdentity.properties.principalId
+    keyVaultName: keyVaultName
   }
 }
 
@@ -144,6 +143,10 @@ resource webApp 'Microsoft.Web/sites@2022-09-01' = {
       alwaysOn: true
     }
   }
+  dependsOn: [
+    appServiceSecretsUserRoleAssignmentModule
+    blobDataReaderRoleAssignment
+  ]
 }
 
 // App Settings

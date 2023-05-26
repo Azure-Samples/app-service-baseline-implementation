@@ -40,10 +40,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   }
 }
 
-resource keyVault 'Microsoft.KeyVault/vaults@2023-02-01' existing =  {
-  name: keyVaultName
-}
-
 resource webApp 'Microsoft.Web/sites@2022-09-01' existing = {
   name: appName
 }
@@ -67,13 +63,12 @@ resource appGatewayManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdenti
 }
 
 // Grant the Azure Application Gateway managed identity with key vault secrets role permissions; this allows pulling certificates.
-resource appGatewayManagedIdentitySecretsUserRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: keyVault
-  name: guid(resourceGroup().id, appGatewayManagedIdentity.name, keyVaultSecretsUserRole.id)
-  properties: {
+module appGatewaySecretsUserRoleAssignmentModule '../modules/keyvaultRoleAssignment.bicep' = {
+  name: 'appGatewaySecretsUserRoleAssignmentDeploy'
+  params: {
     roleDefinitionId: keyVaultSecretsUserRole.id
     principalId: appGatewayManagedIdentity.properties.principalId
-    principalType: 'ServicePrincipal'
+    keyVaultName: keyVaultName
   }
 }
 
@@ -280,7 +275,7 @@ resource appGateWay 'Microsoft.Network/applicationGateways@2022-11-01' = {
     }
   }
   dependsOn: [
-    appGatewayManagedIdentitySecretsUserRoleAssignment
+    appGatewaySecretsUserRoleAssignmentModule
   ]
 }
 
