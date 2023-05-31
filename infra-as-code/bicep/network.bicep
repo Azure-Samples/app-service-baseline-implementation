@@ -18,6 +18,7 @@ var vnetAddressPrefix = '10.0.0.0/16'
 var appGatewaySubnetPrefix = '10.0.1.0/24'
 var appServicesSubnetPrefix = '10.0.0.0/24'
 var privateEndpointsSubnetPrefix = '10.0.2.0/27'
+var agentsSubnetPrefix = '10.0.2.32/27'
 
 //Temp disable DDoS protection
 var enableDdosProtection = !developmentEnvironment
@@ -83,7 +84,16 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' = {
             id: privateEndpointsSubnetNsg.id
           }
         }
-
+      }
+      {
+        // Build agents subnet
+        name: 'snet-agents'
+        properties: {
+          addressPrefix: agentsSubnetPrefix
+          networkSecurityGroup: {
+            id: agentsSubnetNsg.id
+          }
+        }
       }
     ]
   }
@@ -99,6 +109,10 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' = {
   resource privateEnpointsSubnet 'subnets' existing = {
     name: 'snet-privateEndpoints'
   }
+
+  resource agentsSubnet 'subnets' existing = {
+    name: 'snet-agents'
+  }  
 }
 
 //App Gateway subnet NSG
@@ -222,6 +236,13 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01
 //Private endpoints subnets NSG
 resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   name: 'nsg-privateEndpointsSubnet'
+  location: location
+  properties: {}
+}
+
+//Build agents subnets NSG
+resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+  name: 'nsg-agentsSubnet'
   location: location
   properties: {}
 }
