@@ -237,7 +237,24 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01
 resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
   name: 'nsg-privateEndpointsSubnet'
   location: location
-  properties: {}
+  properties: {
+    securityRules: [
+      {
+        name: 'PE.Out.Deny.All'
+        properties: {
+          description: 'Deny outbound traffic from the private endpoints subnet'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: privateEndpointsSubnetPrefix
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 100
+          direction: 'Outbound'
+        }
+      }      
+    ]
+  }
 }
 
 //Build agents subnets NSG
