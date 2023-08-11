@@ -13,7 +13,7 @@
       "value": true
     },
     "appGatewayListenerCertificate": {
-      "value": "[base64 cert data]"
+      "value": "[base64 cert data from $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE]"
     }    
   }
 }
