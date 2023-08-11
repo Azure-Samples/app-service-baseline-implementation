@@ -193,6 +193,5 @@ This section will help you to validate the workload is exposed correctly and res
 After you are done exploring your deployed AppService refence implementation, you'll want to delete the created Azure resources to prevent undesired costs from accruing.
 
 ```bash
-az group delete --name $RESOURCE_GROUP
-az keyvault purge  -n <key-vault-name>
-```
+az group delete --name $RESOURCE_GROUP -y
+az keyvault purge  -n kv-${BASE_NAME}
