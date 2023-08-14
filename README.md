@@ -84,7 +84,8 @@ Note: Take into account that sql database enforce [password complexity](https://
 
 ```bash
    LOCATION=westus3
-   BASE_NAME=<base-resource-name between 3 and 6 charcters>
+   BASE_NAME=<base-resource-name (between 3 and 6 characters)>
+
    RESOURCE_GROUP=<resource-group-name>
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
