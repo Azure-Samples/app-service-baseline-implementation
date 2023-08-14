@@ -124,7 +124,8 @@ First, we need to clone the [Simple Web App workload repository](https://github.
 
 ```bash
 cd ..
-clone https://github.com/Azure-Samples/app-service-sample-workload.git
+git clone https://github.com/Azure-Samples/app-service-sample-workload.git
+
 cd app-service-sample-workload
 ```
 
