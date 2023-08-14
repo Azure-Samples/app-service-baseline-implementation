@@ -11,7 +11,7 @@ The following are prerequisites.
 ## Prerequisites
 
 1. Ensure you have an [Azure Account](https://azure.microsoft.com/free/)
-1. It is needed an user with [roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles) with enough permission to do role assigments. For example User Access Administrator or Owner.
+1. The deployment must be started by a user who has sufficient permissions to assign [roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles), such as a User Access Administrator or Owner.
 1. Ensure you have the [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli)
 1. Ensure you have the [az Bicep tools installed](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install)
 
