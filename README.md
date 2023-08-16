@@ -23,6 +23,13 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. In your command-line tool where you have the Azure CLI and Bicep installed, navigate to the root directory of this repository (AppServicesRI)
 
+1. Login and set subscription if it is needed
+
+```bash
+  az login
+  az account set --subscription xxxxx
+```
+
 1. Obtain App gateway certificate
    Azure Application Gateway support for secure TLS using Azure Key Vault and managed identities for Azure resources. This configuration enables end-to-end encryption of the network traffic using standard TLS protocols. For production systems you use a publicly signed certificate backed by a public root certificate authority (CA). Here, we are going to use a self signed certificate for demonstrational purposes.
 
@@ -62,8 +69,12 @@ The following steps are required to deploy the infrastructure from the command l
     "baseName": {
       "value": ""
     },
-    "sqlAdministratorLogin": {},
-    "sqlAdministratorLoginPassword": {},
+    "sqlAdministratorLogin": {
+       "value": ""
+    },
+    "sqlAdministratorLoginPassword": {
+       "value": ""
+    },
     "developmentEnvironment": {
       "value": true
     },
@@ -120,15 +131,6 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
-First, we need to clone the [Simple Web App workload repository](https://github.com/Azure-Samples/app-service-sample-workload)
-
-```bash
-cd ..
-git clone https://github.com/Azure-Samples/app-service-sample-workload.git
-
-cd app-service-sample-workload
-```
-
 Run the following to:
 
 - Allow public access from your IP address, g
@@ -148,7 +150,7 @@ LOGGED_IN_USER_ID=$(az ad signed-in-user show --query id -o tsv)
 RESOURCE_GROUP_ID=$(az group show --resource-group $RESOURCE_GROUP --query id -o tsv)
 STORAGE_BLOB_DATA_CONTRIBUTOR=ba92f5b4-2d11-453d-a403-e96b0029c9fe
 
-az storage account network-rule add -g $RESOURCE_GROUP --account-name "$STORAGE_ACCOUNT_PREFIX$BASE_NAME" --ip-address $CLIENT_IP_ADDRESS
+az storage account network-rule add -g $RESOURCE_GROUP --account-name "$NAME_OF_WEST_STORAGE_ACCOUNT" --ip-address $CLIENT_IP_ADDRESS
 az role assignment create --assignee-principal-type User --assignee-object-id $LOGGED_IN_USER_ID --role $STORAGE_BLOB_DATA_CONTRIBUTOR --scope $RESOURCE_GROUP_ID
 
 az storage container create  \
@@ -156,7 +158,9 @@ az storage container create  \
   --auth-mode login \
   --name deploy
 
-az storage blob upload -f ./website/SimpleWebApp/SimpleWebApp.zip \
+curl https://raw.githubusercontent.com/Azure-Samples/app-service-sample-workload/main/website/SimpleWebApp.zip -o SimpleWebApp.zip
+
+az storage blob upload -f ./SimpleWebApp.zip \
   --account-name $NAME_OF_WEST_STORAGE_ACCOUNT \
   --auth-mode login \
   -c deploy -n SimpleWebApp.zip
@@ -197,3 +201,4 @@ After you are done exploring your deployed AppService refence implementation, yo
 ```bash
 az group delete --name $RESOURCE_GROUP -y
 az keyvault purge  -n kv-${BASE_NAME}
+```

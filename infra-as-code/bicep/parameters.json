@@ -6,8 +6,10 @@
       "value": ""
     },
     "sqlAdministratorLogin": {
+      "value": ""
     },
     "sqlAdministratorLoginPassword": {
+      "value": ""
     },
     "developmentEnvironment": {
       "value": true
