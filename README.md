@@ -144,24 +144,24 @@ CLIENT_IP_ADDRESS=<your-public-ip-address>
 
 STORAGE_ACCOUNT_PREFIX=st
 WEB_APP_PREFIX=app-
-NAME_OF_WEST_STORAGE_ACCOUNT="$STORAGE_ACCOUNT_PREFIX$BASE_NAME"
+NAME_OF_STORAGE_ACCOUNT="$STORAGE_ACCOUNT_PREFIX$BASE_NAME"
 NAME_OF_WEB_APP="$WEB_APP_PREFIX$BASE_NAME"
 LOGGED_IN_USER_ID=$(az ad signed-in-user show --query id -o tsv)
 RESOURCE_GROUP_ID=$(az group show --resource-group $RESOURCE_GROUP --query id -o tsv)
 STORAGE_BLOB_DATA_CONTRIBUTOR=ba92f5b4-2d11-453d-a403-e96b0029c9fe
 
-az storage account network-rule add -g $RESOURCE_GROUP --account-name "$NAME_OF_WEST_STORAGE_ACCOUNT" --ip-address $CLIENT_IP_ADDRESS
+az storage account network-rule add -g $RESOURCE_GROUP --account-name "$NAME_OF_STORAGE_ACCOUNT" --ip-address $CLIENT_IP_ADDRESS
 az role assignment create --assignee-principal-type User --assignee-object-id $LOGGED_IN_USER_ID --role $STORAGE_BLOB_DATA_CONTRIBUTOR --scope $RESOURCE_GROUP_ID
 
 az storage container create  \
-  --account-name $NAME_OF_WEST_STORAGE_ACCOUNT \
+  --account-name $NAME_OF_STORAGE_ACCOUNT \
   --auth-mode login \
   --name deploy
 
 curl https://raw.githubusercontent.com/Azure-Samples/app-service-sample-workload/main/website/SimpleWebApp.zip -o SimpleWebApp.zip
 
 az storage blob upload -f ./SimpleWebApp.zip \
-  --account-name $NAME_OF_WEST_STORAGE_ACCOUNT \
+  --account-name $NAME_OF_STORAGE_ACCOUNT \
   --auth-mode login \
   -c deploy -n SimpleWebApp.zip
 
