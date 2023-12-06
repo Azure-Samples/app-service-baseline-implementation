@@ -66,6 +66,22 @@ The following steps are required to deploy the infrastructure from the command l
      echo APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE: $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE
      ```
 
+1. Update the infra-as-code/parameters file
+
+   ```bicep
+   using './main.bicep'
+
+   param location = 'westus3'
+   param baseName = ''
+   param sqlAdministratorLogin = ''
+   param sqlAdministratorLoginPassword = ''
+   param customDomainName = 'contoso.com'
+   param appGatewayListenerCertificate = '[base64 cert data from $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE]'
+   param developmentEnvironment = true
+   param publishFileName = 'SimpleWebApp.zip'
+   ```
+
+Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
 
 1. Run the following command to create a resource group and deploy the infrastructure. Make sure:
 
@@ -73,15 +89,14 @@ The following steps are required to deploy the infrastructure from the command l
    - The BASE_NAME contains only lowercase letters and is between 3 and 6 characters. All resources will be named given this basename.
    - You choose a valid resource group name
 
-```bash
+   ```bash
    LOCATION=westus3
    BASE_NAME=<base-resource-name (between 3 and 6 characters)>
-  
+
    SQL_ADMINISTRATOR_LOGIN="sqlAdministrator"
    # Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
    SQL_ADMINISTRATOR_LOGIN_PASSWORD='TempP@ssw0rd!2025'
    # This password is for demonstration purposes only and must not be used in production environments. Before deploying to production, replace with a secure password and use Azure Key Vault or a secure parameter passing instead of hardcoded values in scripts.
-
    RESOURCE_GROUP=rg-app-service-${LOCATION}
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
@@ -116,7 +131,7 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
-Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)  
+Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)
 
 Run the following to:
 
