@@ -23,17 +23,17 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. In your command-line tool where you have the Azure CLI and Bicep installed, navigate to the root directory of this repository.
 
-```bash
-  git clone https://github.com/Azure-Samples/app-service-baseline-implementation.git
-  cd app-service-baseline-implementation
-```
+   ```bash
+   git clone https://github.com/Azure-Samples/app-service-baseline-implementation.git
+   cd app-service-baseline-implementation
+   ```
 
 2. Login and set subscription if it is needed
 
-```bash
-  az login
-  # az account set --subscription xxxxx
-```
+   ```bash
+   az login
+   az account set --subscription xxxxx
+   ```
 
 1. Obtain App gateway certificate
    Azure Application Gateway support for secure TLS using Azure Key Vault and managed identities for Azure resources. This configuration enables end-to-end encryption of the network traffic using standard TLS protocols. For production systems you use a publicly signed certificate backed by a public root certificate authority (CA). Here, we are going to use a self signed certificate for demonstrational purposes.
@@ -104,7 +104,7 @@ Note: Take into account that sql database enforce [password complexity](https://
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
      --parameters baseName=$BASE_NAME appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE sqlAdministratorLogin=$SQL_ADMINISTRATOR_LOGIN sqlAdministratorLoginPassword=$SQL_ADMINISTRATOR_LOGIN_PASSWORD
-```
+   ```
 
 ### Publish the web app
 
