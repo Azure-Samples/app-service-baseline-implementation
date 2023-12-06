@@ -229,10 +229,6 @@ resource appServicePlanDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-
       {
         category: 'AllMetrics'
         enabled: true
-        retentionPolicy: {
-          days: 7
-          enabled: true
-        }
       }
     ]
   }
@@ -249,38 +245,22 @@ resource webAppDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-pr
         category: 'AppServiceHTTPLogs'
         categoryGroup: null
         enabled: true
-        retentionPolicy: {
-          days: 7
-          enabled: true
-        }
       }
       {
         category: 'AppServiceConsoleLogs'
         categoryGroup: null
         enabled: true
-        retentionPolicy: {
-          days: 7
-          enabled: true
-        }
       }
       {
         category: 'AppServiceAppLogs'
         categoryGroup: null
         enabled: true
-        retentionPolicy: {
-          days: 7
-          enabled: true
-        }
       }
     ]
     metrics: [
       {
         category: 'AllMetrics'
         enabled: true
-        retentionPolicy: {
-          days: 7
-          enabled: true
-        }
       }
     ]
   }
