@@ -25,10 +25,10 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. Login and set subscription if it is needed
 
-```bash
-  az login
-  az account set --subscription xxxxx
-```
+   ```bash
+   az login
+   az account set --subscription xxxxx
+   ```
 
 1. Obtain App gateway certificate
    Azure Application Gateway support for secure TLS using Azure Key Vault and managed identities for Azure resources. This configuration enables end-to-end encryption of the network traffic using standard TLS protocols. For production systems you use a publicly signed certificate backed by a public root certificate authority (CA). Here, we are going to use a self signed certificate for demonstrational purposes.
