@@ -25,10 +25,10 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. Login and set subscription if it is needed
 
-```bash
-  az login
-  az account set --subscription xxxxx
-```
+   ```bash
+   az login
+   az account set --subscription xxxxx
+   ```
 
 1. Obtain App gateway certificate
    Azure Application Gateway support for secure TLS using Azure Key Vault and managed identities for Azure resources. This configuration enables end-to-end encryption of the network traffic using standard TLS protocols. For production systems you use a publicly signed certificate backed by a public root certificate authority (CA). Here, we are going to use a self signed certificate for demonstrational purposes.
@@ -61,29 +61,18 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. Update the infra-as-code/parameters file
 
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "baseName": {
-      "value": ""
-    },
-    "sqlAdministratorLogin": {
-       "value": ""
-    },
-    "sqlAdministratorLoginPassword": {
-       "value": ""
-    },
-    "developmentEnvironment": {
-      "value": true
-    },
-    "appGatewayListenerCertificate": {
-      "value": "[base64 cert data from $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE]"
-    }
-  }
-}
-```
+   ```bicep
+   using './main.bicep'
+   
+   param location = 'westus3' 
+   param baseName = ''
+   param sqlAdministratorLogin = ''
+   param sqlAdministratorLoginPassword = ''
+   param customDomainName = 'contoso.com'
+   param appGatewayListenerCertificate = '[base64 cert data from $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE]'
+   param developmentEnvironment = true 
+   param publishFileName = 'SimpleWebApp.zip'
+   ```
 
 Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
 
@@ -93,18 +82,18 @@ Note: Take into account that sql database enforce [password complexity](https://
    - The BASE_NAME contains only lowercase letters and is between 6 and 12 characters. All resources will be named given this basename.
    - You choose a valid resource group name
 
-```bash
+   ```bash
    LOCATION=westus3
-   BASE_NAME=<base-resource-name (between 3 and 6 characters)>
+   BASE_NAME=<base-resource-name (between 6 and 12 characters)>
 
    RESOURCE_GROUP=<resource-group-name>
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
-     --parameters @./infra-as-code/bicep/parameters.json \
+     --parameters ./infra-as-code/bicep/main.bicepparam \
      --parameters baseName=$BASE_NAME
-```
+   ```
 
 ### Publish the web app
 
