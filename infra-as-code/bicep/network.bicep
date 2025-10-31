@@ -8,6 +8,7 @@ param baseName string
 @description('The resource group location')
 param location string = resourceGroup().location
 
+@description('Optional. When true will deploy a cost-optimised environment for development purposes. Note that when this param is true, the deployment is not suitable or recommended for Production environments. Default = false.')
 param developmentEnvironment bool
 
 // variables
@@ -26,14 +27,14 @@ var enableDdosProtection = !developmentEnvironment
 // ---- Networking resources ----
 
 // DDoS Protection Plan
-resource ddosProtectionPlan 'Microsoft.Network/ddosProtectionPlans@2022-11-01' = if (enableDdosProtection) {
+resource ddosProtectionPlan 'Microsoft.Network/ddosProtectionPlans@2025-01-01' = if (enableDdosProtection) {
   name: ddosPlanName
   location: location
   properties: {}
 }
 
 //vnet and subnets
-resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' = {
+resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' = {
   name: vnetName
   location: location
   properties: {
@@ -116,7 +117,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' = {
 }
 
 //App Gateway subnet NSG
-resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' = {
   name: 'nsg-appGatewaySubnet'
   location: location
   properties: {
@@ -209,7 +210,7 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01
 }
 
 //App service subnet nsg
-resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' = {
   name: 'nsg-appServicesSubnet'
   location: location
   properties: {
@@ -247,7 +248,7 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01
 }
 
 //Private endpoints subnets NSG
-resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' = {
   name: 'nsg-privateEndpointsSubnet'
   location: location
   properties: {
@@ -271,7 +272,7 @@ resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022
 }
 
 //Build agents subnets NSG
-resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2022-11-01' = {
+resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2025-01-01' = {
   name: 'nsg-agentsSubnet'
   location: location
   properties: {
