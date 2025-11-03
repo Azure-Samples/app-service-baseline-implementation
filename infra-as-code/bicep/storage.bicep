@@ -22,7 +22,7 @@ var storagePrivateEndpointName = 'pep-${storageName}'
 var blobStorageDnsZoneName = 'privatelink.blob.${environment().suffixes.storage}'
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' existing =  {
   name: vnetName
 
   resource privateEndpointsSubnet 'subnets' existing = {
@@ -31,7 +31,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2025-01-01' existing =  {
 }
 
 // ---- Storage resources ----
-resource storage 'Microsoft.Storage/storageAccounts@2025-06-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2025-01-01' = {
   name: storageName
   location: location
   sku: {
@@ -61,7 +61,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2025-06-01' = {
   }
 }
 
-resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2025-01-01' = {
+resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-10-01' = {
   name: storagePrivateEndpointName
   location: location
   properties: {
@@ -100,7 +100,7 @@ resource storageDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 
-resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2025-01-01' = {
+resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-10-01' = {
   name: storageDnsGroupName
   properties: {
     privateDnsZoneConfigs: [

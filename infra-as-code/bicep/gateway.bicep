@@ -14,14 +14,25 @@ param developmentEnvironment bool
 @description('Domain name to use for App Gateway')
 param customDomainName string
 
+@description('The array of availability zones to use for zone redundant resources. E.g. [ "1", "2", "3" ]')
 param availabilityZones array
+
+@description('The secret URI of the Key Vault certificate to use for App Gateway TLS termination.')
 param gatewayCertSecretUri string
 
-// existing resource name params 
+@description('The name of the virtual network to deploy the App Gateway into')
 param vnetName string
+
+@description('The name of the subnet to deploy the App Gateway into')
 param appGatewaySubnetName string
+
+@description('The name of the App Gateway')
 param appName string
+
+@description('The name of the Key Vault to retrieve secrets from')
 param keyVaultName string
+
+@description('The name of the Log Analytics workspace to send logs to')
 param logWorkspaceName string
 
 //variables
@@ -32,7 +43,7 @@ var appGateWayFqdn = 'fe-${baseName}'
 var wafPolicyName= 'waf-${baseName}'
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' existing =  {
   name: vnetName
   
   resource appGatewaySubnet 'subnets' existing = {
@@ -40,16 +51,16 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
   }
 }
 
-resource webApp 'Microsoft.Web/sites@2022-09-01' existing = {
+resource webApp 'Microsoft.Web/sites@2024-11-01' existing = {
   name: appName
 }
 
-resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
   name: logWorkspaceName
 }
 
 // Built-in Azure RBAC role that is applied to a Key Vault to grant with secrets content read privileges. Granted to both Key Vault and our workload's identity.
-resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: '4633458b-17de-408a-b874-0445c86b69e6'
   scope: subscription()
 }
@@ -57,7 +68,7 @@ resource keyVaultSecretsUserRole 'Microsoft.Authorization/roleDefinitions@2022-0
 // ---- App Gateway resources ----
 
 // Managed Identity for App Gateway. 
-resource appGatewayManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+resource appGatewayManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
   name: appGatewayManagedIdentityName
   location: location
 }
@@ -73,7 +84,7 @@ module appGatewaySecretsUserRoleAssignmentModule './modules/keyvaultRoleAssignme
 }
 
 //External IP for App Gateway
-resource appGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
+resource appGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
   name: appGatewayPublicIpName
   location: location
   zones: !developmentEnvironment ? availabilityZones : null
@@ -91,7 +102,7 @@ resource appGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2022-11-01' = {
 }
 
 //WAF policy definition
-resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2022-11-01' = {
+resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2024-10-01' = {
   name: wafPolicyName
   location: location
   properties: {
@@ -118,7 +129,7 @@ resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPo
 }
 
 //App Gateway
-resource appGateWay 'Microsoft.Network/applicationGateways@2022-11-01' = {
+resource appGateWay 'Microsoft.Network/applicationGateways@2024-10-01' = {
   name: appGateWayName
   location: location
   zones: !developmentEnvironment ? availabilityZones : null
