@@ -11,6 +11,8 @@ param location string = resourceGroup().location
 @description('The certificate data for app gateway TLS termination. The value is base64 encoded')
 @secure()
 param appGatewayListenerCertificate string
+
+@description('The SQL connection string to store in Key Vault')
 param sqlConnectionString string
 
 @description('The name of the virtual network to deploy the private endpoint into')

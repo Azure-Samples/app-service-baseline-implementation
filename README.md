@@ -84,6 +84,7 @@ The following steps are required to deploy the infrastructure from the command l
    RESOURCE_GROUP=rg-app-service-${LOCATION}
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
+   # [This takes about twewnty minutes.]
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
      --parameters baseName=$BASE_NAME appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE sqlAdministratorLogin=$SQL_ADMINISTRATOR_LOGIN sqlAdministratorLoginPassword=$SQL_ADMINISTRATOR_LOGIN_PASSWORD
@@ -129,6 +130,7 @@ STORAGE_BLOB_DATA_CONTRIBUTOR=ba92f5b4-2d11-453d-a403-e96b0029c9fe
 
 # Allow public access from your IP address
 az storage account network-rule add -g $RESOURCE_GROUP --account-name "$NAME_OF_STORAGE_ACCOUNT" --ip-address $CLIENT_IP_ADDRESS
+
 # Give the logged in user permissions to upload a blob
 az role assignment create --assignee-principal-type User --assignee-object-id $LOGGED_IN_USER_ID --role $STORAGE_BLOB_DATA_CONTRIBUTOR --scope $RESOURCE_GROUP_ID
 
