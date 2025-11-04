@@ -13,6 +13,7 @@ param location string = resourceGroup().location
 param appGatewayListenerCertificate string
 
 @description('The SQL connection string to store in Key Vault')
+@secure()
 param sqlConnectionString string
 
 @description('The name of the virtual network to deploy the private endpoint into')

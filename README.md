@@ -187,3 +187,9 @@ After you are done exploring your deployed AppService refence implementation, yo
 az group delete --name $RESOURCE_GROUP -y
 az keyvault purge  -n kv-${BASE_NAME}
 ```
+
+## Contributions
+
+Please see our [contributor guide](./CONTRIBUTING.md).
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact <opencode@microsoft.com> with any additional questions or comments.
