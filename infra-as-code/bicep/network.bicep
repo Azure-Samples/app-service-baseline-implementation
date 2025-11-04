@@ -98,22 +98,6 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' = {
       }
     ]
   }
-
-  resource appGatewaySubnet 'subnets' existing = {
-    name: 'snet-appGateway'
-  }
-
-  resource appServiceSubnet 'subnets' existing = {
-    name: 'snet-appServicePlan'
-  }
-
-  resource privateEnpointsSubnet 'subnets' existing = {
-    name: 'snet-privateEndpoints'
-  }
-
-  resource agentsSubnet 'subnets' existing = {
-    name: 'snet-agents'
-  }  
 }
 
 //App Gateway subnet NSG
@@ -296,13 +280,13 @@ resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01' = 
 }
 
 @description('The name of the vnet.')
-output vnetNName string = vnet.name
+output vnetName string = vnet.name
 
 @description('The name of the app service plan subnet.')
-output appServicesSubnetName string = vnet::appServiceSubnet.name
+output appServicesSubnetName string = vnet.properties.subnets[0].name
 
 @description('The name of the app gatewaysubnet.')
-output appGatewaySubnetName string = vnet::appGatewaySubnet.name
+output appGatewaySubnetName string = vnet.properties.subnets[1].name
 
 @description('The name of the private endpoints subnet.')
-output privateEndpointsSubnetName string = vnet::privateEnpointsSubnet.name
+output privateEndpointsSubnetName string = vnet.properties.subnets[2].name

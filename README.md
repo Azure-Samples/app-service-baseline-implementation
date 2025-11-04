@@ -8,7 +8,7 @@ This repository contains the Bicep code to deploy an Azure App Services baseline
 
 The following are prerequisites.
 
-## Prerequisites
+### Prerequisites
 
 1. Ensure you have an [Azure Account](https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn)
 1. The deployment must be started by a user who has sufficient permissions to assign [roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles), such as a User Access Administrator or Owner.
@@ -41,6 +41,7 @@ The following steps are required to deploy the infrastructure from the command l
    - Set a variable for the domain that will be used in the rest of this deployment.
 
      ```bash
+     # Set the domain name used for TLS certificate
      export DOMAIN_NAME_APPSERV_BASELINE="contoso.com"
      ```
 
@@ -51,6 +52,7 @@ The following steps are required to deploy the infrastructure from the command l
      Create the certificate that will be presented to web clients by Azure Application Gateway for your domain.
 
      ```bash
+     ## Generate TLS Certificate (Demo Only)
      openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=${DOMAIN_NAME_APPSERV_BASELINE}/O=Contoso" -addext "subjectAltName = DNS:${DOMAIN_NAME_APPSERV_BASELINE}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
      openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
      ```
