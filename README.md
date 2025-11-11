@@ -115,6 +115,8 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
+Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)  
+
 Run the following to:
 
 ```bash
