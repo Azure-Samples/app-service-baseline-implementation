@@ -142,7 +142,7 @@ az storage container create  \
   --auth-mode login \
   --name deploy
 
-# Download the app zip file
+# Download the app zip file. It is downloaded from App Services sample workload repo
 curl https://raw.githubusercontent.com/Azure-Samples/app-service-sample-workload/main/website/SimpleWebApp.zip -o SimpleWebApp.zip
 
 # Upload the zip file `./SimpleWebApp.zip` to the `deploy` container
