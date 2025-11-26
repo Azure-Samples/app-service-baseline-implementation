@@ -1,9 +1,9 @@
 @description('The location in which all resources should be deployed.')
 param location string = resourceGroup().location
 
-@description('This is the base name for each Azure resource name (6-12 chars)')
-@minLength(6)
-@maxLength(12)
+@description('This is the base name for each Azure resource name (3-6 chars)')
+@minLength(3)
+@maxLength(6)
 param baseName string
 
 @description('The administrator username of the SQL server')
@@ -59,7 +59,7 @@ module storageModule 'storage.bicep' = {
   params: {
     location: location
     baseName: baseName
-    vnetName: networkModule.outputs.vnetNName
+    vnetName: networkModule.outputs.vnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
   }
 }
@@ -72,7 +72,7 @@ module databaseModule 'database.bicep' = {
     baseName: baseName
     sqlAdministratorLogin: sqlAdministratorLogin
     sqlAdministratorLoginPassword: sqlAdministratorLoginPassword
-    vnetName: networkModule.outputs.vnetNName
+    vnetName: networkModule.outputs.vnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
   }
 }
@@ -83,7 +83,7 @@ module secretsModule 'secrets.bicep' = {
   params: {
     location: location
     baseName: baseName
-    vnetName: networkModule.outputs.vnetNName
+    vnetName: networkModule.outputs.vnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
     appGatewayListenerCertificate: appGatewayListenerCertificate
     sqlConnectionString: databaseModule.outputs.sqlConnectionString
@@ -100,7 +100,7 @@ module webappModule 'webapp.bicep' = {
     publishFileName: publishFileName
     keyVaultName: secretsModule.outputs.keyVaultName
     storageName: storageModule.outputs.storageName
-    vnetName: networkModule.outputs.vnetNName
+    vnetName: networkModule.outputs.vnetName
     appServicesSubnetName: networkModule.outputs.appServicesSubnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
     logWorkspaceName: logWorkspace.name
@@ -117,7 +117,7 @@ module gatewayModule 'gateway.bicep' = {
     availabilityZones: availabilityZones
     customDomainName: customDomainName
     appName: webappModule.outputs.appName
-    vnetName: networkModule.outputs.vnetNName
+    vnetName: networkModule.outputs.vnetName
     appGatewaySubnetName: networkModule.outputs.appGatewaySubnetName
     keyVaultName: secretsModule.outputs.keyVaultName
     gatewayCertSecretUri: secretsModule.outputs.gatewayCertSecretUri

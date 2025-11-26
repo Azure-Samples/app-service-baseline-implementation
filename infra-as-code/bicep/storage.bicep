@@ -8,19 +8,21 @@ param baseName string
 @description('The resource group location')
 param location string = resourceGroup().location
 
-// existing resource name params 
+@description('The name of the virtual network to deploy the private endpoint into')
 param vnetName string
+
+@description('The name of the subnet to deploy the private endpoint into')
 param privateEndpointsSubnetName string
 
 // variables
-var storageName = 'st${baseName}'
+var storageName = 'stapp${baseName}'
 var storageSkuName = 'Standard_LRS'
 var storageDnsGroupName = '${storagePrivateEndpointName}/default'
 var storagePrivateEndpointName = 'pep-${storageName}'
 var blobStorageDnsZoneName = 'privatelink.blob.${environment().suffixes.storage}'
 
 // ---- Existing resources ----
-resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
+resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' existing =  {
   name: vnetName
 
   resource privateEndpointsSubnet 'subnets' existing = {
@@ -29,7 +31,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-11-01' existing =  {
 }
 
 // ---- Storage resources ----
-resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2025-01-01' = {
   name: storageName
   location: location
   sku: {
@@ -59,7 +61,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2022-09-01' = {
   }
 }
 
-resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' = {
+resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2024-10-01' = {
   name: storagePrivateEndpointName
   location: location
   properties: {
@@ -80,13 +82,13 @@ resource storagePrivateEndpoint 'Microsoft.Network/privateEndpoints@2022-11-01' 
   }
 }
 
-resource storageDnsZone 'Microsoft.Network/privateDnsZones@2020-06-01' = {
+resource storageDnsZone 'Microsoft.Network/privateDnsZones@2024-06-01' = {
   name: blobStorageDnsZoneName
   location: 'global'
   properties: {}
 }
 
-resource storageDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2020-06-01' = {
+resource storageDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLinks@2024-06-01' = {
   parent: storageDnsZone
   name: '${blobStorageDnsZoneName}-link'
   location: 'global'
@@ -98,7 +100,7 @@ resource storageDnsZoneLink 'Microsoft.Network/privateDnsZones/virtualNetworkLin
   }
 }
 
-resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2022-11-01' = {
+resource storageDnsZoneGroup 'Microsoft.Network/privateEndpoints/privateDnsZoneGroups@2024-10-01' = {
   name: storageDnsGroupName
   properties: {
     privateDnsZoneConfigs: [

@@ -8,9 +8,9 @@ This repository contains the Bicep code to deploy an Azure App Services baseline
 
 The following are prerequisites.
 
-## Prerequisites
+### Prerequisites
 
-1. Ensure you have an [Azure Account](https://azure.microsoft.com/free/)
+1. Ensure you have an [Azure Account](https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn)
 1. The deployment must be started by a user who has sufficient permissions to assign [roles](https://learn.microsoft.com/azure/role-based-access-control/built-in-roles), such as a User Access Administrator or Owner.
 1. Ensure you have the [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli)
 1. Ensure you have the [az Bicep tools installed](https://learn.microsoft.com/azure/azure-resource-manager/bicep/install)
@@ -21,13 +21,18 @@ Use the following to deploy the infrastructure.
 
 The following steps are required to deploy the infrastructure from the command line.
 
-1. In your command-line tool where you have the Azure CLI and Bicep installed, navigate to the root directory of this repository (AppServicesRI)
+1. In your command-line tool where you have the Azure CLI and Bicep installed, navigate to the root directory of this repository.
 
-1. Login and set subscription if it is needed
+```bash
+  git clone https://github.com/Azure-Samples/app-service-baseline-implementation.git
+  cd app-service-baseline-implementation
+```
+
+2. Login and set subscription if it is needed
 
 ```bash
   az login
-  az account set --subscription xxxxx
+  # az account set --subscription xxxxx
 ```
 
 1. Obtain App gateway certificate
@@ -36,6 +41,7 @@ The following steps are required to deploy the infrastructure from the command l
    - Set a variable for the domain that will be used in the rest of this deployment.
 
      ```bash
+     # Set the domain name used for TLS certificate
      export DOMAIN_NAME_APPSERV_BASELINE="contoso.com"
      ```
 
@@ -46,6 +52,7 @@ The following steps are required to deploy the infrastructure from the command l
      Create the certificate that will be presented to web clients by Azure Application Gateway for your domain.
 
      ```bash
+     ## Generate TLS Certificate (Demo Only)
      openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out appgw.crt -keyout appgw.key -subj "/CN=${DOMAIN_NAME_APPSERV_BASELINE}/O=Contoso" -addext "subjectAltName = DNS:${DOMAIN_NAME_APPSERV_BASELINE}" -addext "keyUsage = digitalSignature" -addext "extendedKeyUsage = serverAuth"
      openssl pkcs12 -export -out appgw.pfx -in appgw.crt -inkey appgw.key -passout pass:
      ```
@@ -59,51 +66,29 @@ The following steps are required to deploy the infrastructure from the command l
      echo APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE: $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE
      ```
 
-1. Update the infra-as-code/parameters file
-
-```json
-{
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
-  "contentVersion": "1.0.0.0",
-  "parameters": {
-    "baseName": {
-      "value": ""
-    },
-    "sqlAdministratorLogin": {
-       "value": ""
-    },
-    "sqlAdministratorLoginPassword": {
-       "value": ""
-    },
-    "developmentEnvironment": {
-      "value": true
-    },
-    "appGatewayListenerCertificate": {
-      "value": "[base64 cert data from $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE]"
-    }
-  }
-}
-```
-
-Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
 
 1. Run the following command to create a resource group and deploy the infrastructure. Make sure:
 
    - The location you choose [supports availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support)
-   - The BASE_NAME contains only lowercase letters and is between 6 and 12 characters. All resources will be named given this basename.
+   - The BASE_NAME contains only lowercase letters and is between 3 and 6 characters. All resources will be named given this basename.
    - You choose a valid resource group name
 
 ```bash
    LOCATION=westus3
    BASE_NAME=<base-resource-name (between 3 and 6 characters)>
+  
+   SQL_ADMINISTRATOR_LOGIN="sqlAdministrator"
+   # Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
+   SQL_ADMINISTRATOR_LOGIN_PASSWORD='TempP@ssw0rd!2025'
+   # This password is for demonstration purposes only and must not be used in production environments. Before deploying to production, replace with a secure password and use Azure Key Vault or a secure parameter passing instead of hardcoded values in scripts.
 
-   RESOURCE_GROUP=<resource-group-name>
+   RESOURCE_GROUP=rg-app-service-${LOCATION}
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
+   # [This takes about twenty minutes.]
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
-     --parameters @./infra-as-code/bicep/parameters.json \
-     --parameters baseName=$BASE_NAME
+     --parameters baseName=$BASE_NAME appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE sqlAdministratorLogin=$SQL_ADMINISTRATOR_LOGIN sqlAdministratorLoginPassword=$SQL_ADMINISTRATOR_LOGIN_PASSWORD
 ```
 
 ### Publish the web app
@@ -131,18 +116,14 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
-Run the following to:
+Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)  
 
-- Allow public access from your IP address, g
-- Give the logged in user permissions to upload a blob
-- Create the `deploy` container
-- Upload the zip file `./website/SimpleWebApp/SimpleWebApp.zip` to the `deploy` container
-- Tell the web app to restart
+Run the following to:
 
 ```bash
 CLIENT_IP_ADDRESS=<your-public-ip-address>
 
-STORAGE_ACCOUNT_PREFIX=st
+STORAGE_ACCOUNT_PREFIX=stapp
 WEB_APP_PREFIX=app-
 NAME_OF_STORAGE_ACCOUNT="$STORAGE_ACCOUNT_PREFIX$BASE_NAME"
 NAME_OF_WEB_APP="$WEB_APP_PREFIX$BASE_NAME"
@@ -150,21 +131,28 @@ LOGGED_IN_USER_ID=$(az ad signed-in-user show --query id -o tsv)
 RESOURCE_GROUP_ID=$(az group show --resource-group $RESOURCE_GROUP --query id -o tsv)
 STORAGE_BLOB_DATA_CONTRIBUTOR=ba92f5b4-2d11-453d-a403-e96b0029c9fe
 
+# Allow public access from your IP address
 az storage account network-rule add -g $RESOURCE_GROUP --account-name "$NAME_OF_STORAGE_ACCOUNT" --ip-address $CLIENT_IP_ADDRESS
+
+# Give the logged in user permissions to upload a blob
 az role assignment create --assignee-principal-type User --assignee-object-id $LOGGED_IN_USER_ID --role $STORAGE_BLOB_DATA_CONTRIBUTOR --scope $RESOURCE_GROUP_ID
 
+# Create the `deploy` container
 az storage container create  \
   --account-name $NAME_OF_STORAGE_ACCOUNT \
   --auth-mode login \
   --name deploy
 
+# Download the app zip file. It is downloaded from App Services sample workload repo
 curl https://raw.githubusercontent.com/Azure-Samples/app-service-sample-workload/main/website/SimpleWebApp.zip -o SimpleWebApp.zip
 
+# Upload the zip file `./SimpleWebApp.zip` to the `deploy` container
 az storage blob upload -f ./SimpleWebApp.zip \
   --account-name $NAME_OF_STORAGE_ACCOUNT \
   --auth-mode login \
   -c deploy -n SimpleWebApp.zip
 
+# Restart app service
 az webapp restart --name $NAME_OF_WEB_APP --resource-group $RESOURCE_GROUP
 ```
 
@@ -202,3 +190,9 @@ After you are done exploring your deployed AppService refence implementation, yo
 az group delete --name $RESOURCE_GROUP -y
 az keyvault purge  -n kv-${BASE_NAME}
 ```
+
+## Contributions
+
+Please see our [contributor guide](./CONTRIBUTING.md).
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact <opencode@microsoft.com> with any additional questions or comments.
