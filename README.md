@@ -84,7 +84,7 @@ The following steps are required to deploy the infrastructure from the command l
    RESOURCE_GROUP=rg-app-service-${LOCATION}
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
 
-   # [This takes about twewnty minutes.]
+   # [This takes about twenty minutes.]
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
      --parameters baseName=$BASE_NAME appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE sqlAdministratorLogin=$SQL_ADMINISTRATOR_LOGIN sqlAdministratorLoginPassword=$SQL_ADMINISTRATOR_LOGIN_PASSWORD
