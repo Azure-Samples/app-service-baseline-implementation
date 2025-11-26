@@ -98,6 +98,22 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' = {
       }
     ]
   }
+
+  resource appGatewaySubnet 'subnets' existing = {
+    name: 'snet-appGateway'
+  }
+
+  resource appServiceSubnet 'subnets' existing = {
+    name: 'snet-appServicePlan'
+  }
+
+  resource privateEnpointsSubnet 'subnets' existing = {
+    name: 'snet-privateEndpoints'
+  }
+
+  resource agentsSubnet 'subnets' existing = {
+    name: 'snet-agents'
+  }
 }
 
 //App Gateway subnet NSG
@@ -147,7 +163,7 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
           priority: 120
           direction: 'Inbound'
         }
-      }      
+      }
       {
         name: 'DenyAllInBound'
         properties: {
@@ -160,7 +176,7 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
           priority: 1000
           direction: 'Inbound'
         }
-      }  
+      }
       {
         name: 'AppGw.Out.Allow.PrivateEndpoints'
         properties: {
@@ -250,7 +266,7 @@ resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024
           priority: 100
           direction: 'Outbound'
         }
-      }      
+      }
     ]
   }
 }
@@ -279,14 +295,15 @@ resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01' = 
   }
 }
 
+// ---- Outputs ----
 @description('The name of the vnet.')
 output vnetName string = vnet.name
 
 @description('The name of the app service plan subnet.')
-output appServicesSubnetName string = vnet.properties.subnets[0].name
+output appServicesSubnetName string = vnet::appServiceSubnet.name
 
 @description('The name of the app gatewaysubnet.')
-output appGatewaySubnetName string = vnet.properties.subnets[1].name
+output appGatewaySubnetName string = vnet::appGatewaySubnet.name
 
 @description('The name of the private endpoints subnet.')
-output privateEndpointsSubnetName string = vnet.properties.subnets[2].name
+output privateEndpointsSubnetName string = vnet::privateEnpointsSubnet.name
