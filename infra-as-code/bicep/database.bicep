@@ -55,7 +55,7 @@ resource sqlServer 'Microsoft.Sql/servers@2024-11-01-preview' = {
 }
 
 //database
-resource sqlDatabase'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
   name: sampleSqlDatabaseName
   parent: sqlServer
   location: location
