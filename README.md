@@ -72,7 +72,7 @@ The following steps are required to deploy the infrastructure from the command l
    - The BASE_NAME contains only lowercase letters and is between 3 and 6 characters. All resources will be named given this basename.
    - You choose a valid resource group name
 
-```bash
+   ```bash
    LOCATION=westus3
    BASE_NAME=<base-resource-name (between 3 and 6 characters)>
 
