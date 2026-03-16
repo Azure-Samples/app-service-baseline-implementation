@@ -23,17 +23,17 @@ The following steps are required to deploy the infrastructure from the command l
 
 1. In your command-line tool where you have the Azure CLI and Bicep installed, navigate to the root directory of this repository.
 
-```bash
-  git clone https://github.com/Azure-Samples/app-service-baseline-implementation.git
-  cd app-service-baseline-implementation
-```
+   ```bash
+   git clone https://github.com/Azure-Samples/app-service-baseline-implementation.git
+   cd app-service-baseline-implementation
+   ```
 
-2. Login and set subscription if it is needed
+1. Login and set subscription if it is needed
 
-```bash
-  az login
-  # az account set --subscription xxxxx
-```
+   ```bash
+   az login
+   az account set --subscription xxxxx
+   ```
 
 1. Obtain App gateway certificate
    Azure Application Gateway support for secure TLS using Azure Key Vault and managed identities for Azure resources. This configuration enables end-to-end encryption of the network traffic using standard TLS protocols. For production systems you use a publicly signed certificate backed by a public root certificate authority (CA). Here, we are going to use a self signed certificate for demonstrational purposes.
@@ -66,17 +66,16 @@ The following steps are required to deploy the infrastructure from the command l
      echo APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE: $APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE
      ```
 
-
 1. Run the following command to create a resource group and deploy the infrastructure. Make sure:
 
    - The location you choose [supports availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support)
    - The BASE_NAME contains only lowercase letters and is between 3 and 6 characters. All resources will be named given this basename.
    - You choose a valid resource group name
 
-```bash
+   ```bash
    LOCATION=westus3
    BASE_NAME=<base-resource-name (between 3 and 6 characters)>
-  
+
    SQL_ADMINISTRATOR_LOGIN="sqlAdministrator"
    # Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
    SQL_ADMINISTRATOR_LOGIN_PASSWORD='TempP@ssw0rd!2025'
@@ -89,7 +88,7 @@ The following steps are required to deploy the infrastructure from the command l
    az deployment group create --template-file ./infra-as-code/bicep/main.bicep \
      --resource-group $RESOURCE_GROUP \
      --parameters baseName=$BASE_NAME appGatewayListenerCertificate=$APP_GATEWAY_LISTENER_CERTIFICATE_APPSERV_BASELINE sqlAdministratorLogin=$SQL_ADMINISTRATOR_LOGIN sqlAdministratorLoginPassword=$SQL_ADMINISTRATOR_LOGIN_PASSWORD
-```
+   ```
 
 ### Publish the web app
 
@@ -116,7 +115,7 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
-Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)  
+Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)
 
 Run the following to:
 
