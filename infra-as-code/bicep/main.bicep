@@ -32,7 +32,7 @@ var logWorkspaceName = 'log-${baseName}'
 
 
 // ---- Log Analytics workspace ----
-resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' = {
   name: logWorkspaceName
   location: location
   properties: {
