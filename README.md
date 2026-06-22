@@ -79,6 +79,7 @@ The following steps are required to deploy the infrastructure from the command l
    SQL_ADMINISTRATOR_LOGIN="sqlAdministrator"
 
    # Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
+
    # Generate a strong password meeting SQL complexity requirements: minimum 8 characters, at least one uppercase, one lowercase, one digit, and one special character
    SQL_ADMINISTRATOR_LOGIN_PASSWORD=
    # This password must meet Azure SQL Database password complexity requirements and must not be hardcoded in scripts or version control.
