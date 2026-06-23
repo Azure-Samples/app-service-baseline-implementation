@@ -77,9 +77,12 @@ The following steps are required to deploy the infrastructure from the command l
    BASE_NAME=<base-resource-name (between 3 and 6 characters)>
 
    SQL_ADMINISTRATOR_LOGIN="sqlAdministrator"
+
    # Note: Take into account that sql database enforce [password complexity](https://learn.microsoft.com/sql/relational-databases/security/password-policy?view=sql-server-ver16#password-complexity)
-   SQL_ADMINISTRATOR_LOGIN_PASSWORD='TempP@ssw0rd!2025'
-   # This password is for demonstration purposes only and must not be used in production environments. Before deploying to production, replace with a secure password and use Azure Key Vault or a secure parameter passing instead of hardcoded values in scripts.
+
+   # Generate a strong password meeting SQL complexity requirements: minimum 8 characters, at least one uppercase, one lowercase, one digit, and one special character
+   SQL_ADMINISTRATOR_LOGIN_PASSWORD='<your-secure-password>'
+   # This password must meet Azure SQL Database password complexity requirements and must not be hardcoded in scripts or version control.
 
    RESOURCE_GROUP=rg-app-service-${LOCATION}
    az group create --location $LOCATION --resource-group $RESOURCE_GROUP
