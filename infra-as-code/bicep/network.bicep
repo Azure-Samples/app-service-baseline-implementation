@@ -182,10 +182,10 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
       {
         name: 'AppGw.Out.Allow.PrivateEndpoints'
         properties: {
-          description: 'Allow outbound traffic from the App Gateway subnet to the Private Endpoints subnet.'
-          protocol: '*'
+          description: 'Allow outbound HTTPS traffic from the App Gateway subnet to the Private Endpoints subnet (web app, Key Vault certificate).'
+          protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '*'
+          destinationPortRange: '443'
           sourceAddressPrefix: appGatewaySubnetPrefix
           destinationAddressPrefix: privateEndpointsSubnetPrefix
           access: 'Allow'
