@@ -118,6 +118,12 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 1. The deployed storage account does not allow public access, so you will need to temporarily allow access public access from your IP address.
 1. You need to give your user permissions to upload a blob to the storage account.
 
+> [!IMPORTANT]
+> **Disclaimer: this workaround is for demonstration only.** The storage account in this implementation keeps its public endpoint enabled (`publicNetworkAccess` is not set) and relies on the firewall default action `Deny` plus the private endpoint. That is what makes the IP rule in the next step work. For a production deployment, we recommend the following:
+>
+> - Set `publicNetworkAccess: 'Disabled'` on the storage account (keep `networkAcls.defaultAction: 'Deny'`), so the only way in is the private endpoint.
+> - Upload the zip file from a [self-hosted agent](https://learn.microsoft.com/azure/devops/pipelines/agents/agents#self-hosted-agents) that runs inside the virtual network (for example, in the `snet-agents` subnet), instead of adding a client IP rule. With public access disabled, IP rules no longer apply.
+
 Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)
 
 Run the following to:
