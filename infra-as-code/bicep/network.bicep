@@ -84,6 +84,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' = {
           networkSecurityGroup: {
             id: privateEndpointsSubnetNsg.id
           }
+          // Evaluate the subnet NSG for traffic to the private endpoints (default is Disabled, which ignores the NSG)
+          privateEndpointNetworkPolicies: 'NetworkSecurityGroupEnabled'
         }
       }
       {
@@ -253,6 +255,62 @@ resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024
   location: location
   properties: {
     securityRules: [
+      {
+        name: 'PE.In.Allow.AppPlan.HTTPS'
+        properties: {
+          description: 'Allow inbound HTTPS from the App Service integration subnet to the private endpoints (Storage, Key Vault).'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Allow.AppPlan.SQL'
+        properties: {
+          description: 'Allow inbound SQL (1433) from the App Service integration subnet to the SQL private endpoint.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1433'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 110
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Allow.AppGw.HTTPS'
+        properties: {
+          description: 'Allow inbound HTTPS from the App Gateway subnet to the private endpoints (web app, Key Vault certificate).'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: appGatewaySubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 120
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Deny.All'
+        properties: {
+          description: 'Deny all other inbound traffic to the private endpoints subnet.'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Deny'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
       {
         name: 'PE.Out.Deny.All'
         properties: {
