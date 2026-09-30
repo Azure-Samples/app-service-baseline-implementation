@@ -245,6 +245,36 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
           direction: 'Outbound'
         }
       }
+      {
+        name: 'AppPlan.Out.Allow.PrivateEndpoints.SQL'
+        properties: {
+          description: 'Allow outbound SQL traffic (1433) from the app service subnet to the SQL private endpoint.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1433'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 120
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'AppPlan.Out.Deny.All'
+        properties: {
+          // vnetRouteAllEnabled routes all app outbound traffic through this subnet, so this also blocks direct internet egress.
+          // Add an explicit allow rule above this one for any new dependency.
+          description: 'Deny all other outbound traffic from the app service subnet (including direct internet egress).'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
+          direction: 'Outbound'
+        }
+      }
     ]
   }
 }
