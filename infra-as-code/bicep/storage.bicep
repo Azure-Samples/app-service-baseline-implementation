@@ -61,7 +61,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2025-01-01' = {
     }
     minimumTlsVersion: 'TLS1_2'
     networkAcls: {
-      bypass: 'AzureServices'
+      // No Azure service needs the trusted services bypass: the web app reads the package through the private endpoint
+      // and diagnostic settings go to Log Analytics. Add resourceAccessRules for specific resource instances if that changes.
+      bypass: 'None'
       defaultAction: 'Deny'
     }
     supportsHttpsTrafficOnly: true
