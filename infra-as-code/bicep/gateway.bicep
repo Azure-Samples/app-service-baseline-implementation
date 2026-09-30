@@ -101,6 +101,35 @@ resource appGatewayPublicIp 'Microsoft.Network/publicIPAddresses@2024-10-01' = {
   }
 }
 
+// App Gateway public IP diagnostic settings
+resource appGatewayPublicIpDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${appGatewayPublicIp.name}-diagnosticSettings'
+  scope: appGatewayPublicIp
+  properties: {
+    workspaceId: logWorkspace.id
+    logs: [
+      {
+        category: 'DDoSProtectionNotifications'
+        enabled: true
+      }
+      {
+        category: 'DDoSMitigationFlowLogs'
+        enabled: true
+      }
+      {
+        category: 'DDoSMitigationReports'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
+  }
+}
+
 //WAF policy definition
 resource wafPolicy 'Microsoft.Network/ApplicationGatewayWebApplicationFirewallPolicies@2024-10-01' = {
   name: wafPolicyName

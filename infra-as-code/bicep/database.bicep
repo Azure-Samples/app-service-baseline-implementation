@@ -20,6 +20,9 @@ param vnetName string
 @description('The name of the subnet to deploy the private endpoint into')
 param privateEndpointsSubnetName string
 
+@description('The name of the Log Analytics workspace to send diagnostics to')
+param logWorkspaceName string
+
 // variables
 var sqlServerName = 'sql-${baseName}'
 var sampleSqlDatabaseName = 'sqldb-adventureworks'
@@ -29,6 +32,10 @@ var sqlDnsZoneName = 'privatelink${environment().suffixes.sqlServerHostname}'
 var sqlConnectionString = 'Server=tcp:${sqlServerName}${environment().suffixes.sqlServerHostname},1433;Initial Catalog=${sampleSqlDatabaseName};Persist Security Info=False;User ID=${sqlAdministratorLogin};Password=${sqlAdministratorLoginPassword};MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;'
 
 // ---- Existing resources ----
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
+  name: logWorkspaceName
+}
+
 resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' existing =  {
   name: vnetName
 
@@ -72,6 +79,75 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2024-11-01-preview' = {
     collation: 'SQL_Latin1_General_CP1_CI_AS'
     maxSizeBytes: 104857600
     sampleName: 'AdventureWorksLT'
+  }
+}
+
+// SQL database diagnostic settings
+resource sqlDatabaseDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${sqlDatabase.name}-diagnosticSettings'
+  scope: sqlDatabase
+  properties: {
+    workspaceId: logWorkspace.id
+    logs: [
+      {
+        category: 'SQLInsights'
+        enabled: true
+      }
+      {
+        category: 'AutomaticTuning'
+        enabled: true
+      }
+      {
+        category: 'QueryStoreRuntimeStatistics'
+        enabled: true
+      }
+      {
+        category: 'QueryStoreWaitStatistics'
+        enabled: true
+      }
+      {
+        category: 'Errors'
+        enabled: true
+      }
+      {
+        category: 'DatabaseWaitStatistics'
+        enabled: true
+      }
+      {
+        category: 'Timeouts'
+        enabled: true
+      }
+      {
+        category: 'Blocks'
+        enabled: true
+      }
+      {
+        category: 'Deadlocks'
+        enabled: true
+      }
+      {
+        category: 'DevOpsOperationsAudit'
+        enabled: true
+      }
+      {
+        category: 'SQLSecurityAuditEvents'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'Basic'
+        enabled: true
+      }
+      {
+        category: 'InstanceAndAppAdvanced'
+        enabled: true
+      }
+      {
+        category: 'WorkloadManagement'
+        enabled: true
+      }
+    ]
   }
 }
 

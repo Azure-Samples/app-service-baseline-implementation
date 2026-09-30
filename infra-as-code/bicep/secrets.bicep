@@ -22,6 +22,9 @@ param vnetName string
 @description('The name of the subnet to deploy the private endpoint into')
 param privateEndpointsSubnetName string
 
+@description('The name of the Log Analytics workspace to send diagnostics to')
+param logWorkspaceName string
+
 //variables
 var keyVaultName = 'kv-${baseName}'
 var keyVaultPrivateEndpointName = 'pep-${keyVaultName}'
@@ -29,6 +32,10 @@ var keyVaultDnsGroupName = '${keyVaultPrivateEndpointName}/default'
 var keyVaultDnsZoneName = 'privatelink.vaultcore.azure.net' //Cannot use 'privatelink${environment().suffixes.keyvaultDns}', per https://github.com/Azure/bicep/issues/9708
 
 // ---- Existing resources ----
+resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
+  name: logWorkspaceName
+}
+
 resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' existing =  {
   name: vnetName
 
@@ -64,6 +71,31 @@ resource keyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       value: appGatewayListenerCertificate
       contentType: 'application/x-pkcs12'
     }
+  }
+}
+
+// Key Vault diagnostic settings
+resource keyVaultDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: '${keyVault.name}-diagnosticSettings'
+  scope: keyVault
+  properties: {
+    workspaceId: logWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 
