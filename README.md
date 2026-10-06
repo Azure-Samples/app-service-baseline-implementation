@@ -122,7 +122,7 @@ Because we have not implemented a CI/CD pipeline with a self-hosted agent, we ne
 > **Disclaimer: this workaround is for demonstration only.** The storage account in this implementation keeps its public endpoint enabled (`publicNetworkAccess` is not set) and relies on the firewall default action `Deny` plus the private endpoint. That is what makes the IP rule in the next step work. For a production deployment, we recommend the following:
 >
 > - Set `publicNetworkAccess: 'Disabled'` on the storage account (keep `networkAcls.defaultAction: 'Deny'`), so the only way in is the private endpoint.
-> - Upload the zip file from a [self-hosted agent](https://learn.microsoft.com/azure/devops/pipelines/agents/agents#self-hosted-agents) that runs inside the virtual network (for example, in the `snet-agents` subnet), instead of adding a client IP rule. With public access disabled, IP rules no longer apply.
+> - Upload the zip file from a [self-hosted agent](https://learn.microsoft.com/azure/devops/pipelines/agents/agents#self-hosted-agents) that runs inside the virtual network, instead of adding a client IP rule. With public access disabled, IP rules no longer apply. The `snet-agents` subnet is reserved for this purpose, but its network security group denies all inbound and outbound traffic until you add allow rules. Before you use it, allow the agent's outbound HTTPS to the storage private endpoint and to its orchestrator, and add an inbound HTTPS rule for the agents subnet to the private endpoints subnet network security group.
 
 Deploy zip file from [App Service Sample Workload](https://github.com/Azure-Samples/app-service-sample-workload)
 
