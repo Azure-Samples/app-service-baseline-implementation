@@ -143,10 +143,6 @@ resource sqlDatabaseDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-
         category: 'InstanceAndAppAdvanced'
         enabled: true
       }
-      {
-        category: 'WorkloadManagement'
-        enabled: true
-      }
     ]
   }
 }
