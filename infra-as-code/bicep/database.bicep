@@ -134,16 +134,6 @@ resource sqlDatabaseDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-
         enabled: true
       }
     ]
-    metrics: [
-      {
-        category: 'Basic'
-        enabled: true
-      }
-      {
-        category: 'InstanceAndAppAdvanced'
-        enabled: true
-      }
-    ]
   }
 }
 

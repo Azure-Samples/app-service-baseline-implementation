@@ -95,12 +95,6 @@ resource blobServiceDiagSettings 'Microsoft.Insights/diagnosticSettings@2021-05-
         enabled: true
       }
     ]
-    metrics: [
-      {
-        category: 'Transaction'
-        enabled: true
-      }
-    ]
   }
 }
 

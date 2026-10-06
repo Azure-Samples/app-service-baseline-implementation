@@ -121,12 +121,6 @@ resource appGatewayPublicIpDiagSettings 'Microsoft.Insights/diagnosticSettings@2
         enabled: true
       }
     ]
-    metrics: [
-      {
-        category: 'AllMetrics'
-        enabled: true
-      }
-    ]
   }
 }
 
