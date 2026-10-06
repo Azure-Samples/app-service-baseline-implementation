@@ -61,6 +61,7 @@ module storageModule 'storage.bicep' = {
     baseName: baseName
     vnetName: networkModule.outputs.vnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
+    logWorkspaceName: logWorkspace.name
   }
 }
 
@@ -74,6 +75,7 @@ module databaseModule 'database.bicep' = {
     sqlAdministratorLoginPassword: sqlAdministratorLoginPassword
     vnetName: networkModule.outputs.vnetName
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
+    logWorkspaceName: logWorkspace.name
   }
 }
 
@@ -87,6 +89,7 @@ module secretsModule 'secrets.bicep' = {
     privateEndpointsSubnetName: networkModule.outputs.privateEndpointsSubnetName
     appGatewayListenerCertificate: appGatewayListenerCertificate
     sqlConnectionString: databaseModule.outputs.sqlConnectionString
+    logWorkspaceName: logWorkspace.name
   }
 }
 

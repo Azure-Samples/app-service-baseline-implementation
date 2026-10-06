@@ -84,6 +84,8 @@ resource vnet 'Microsoft.Network/virtualNetworks@2024-10-01' = {
           networkSecurityGroup: {
             id: privateEndpointsSubnetNsg.id
           }
+          // Evaluate the subnet NSG for traffic to the private endpoints (default is Disabled, which ignores the NSG)
+          privateEndpointNetworkPolicies: 'NetworkSecurityGroupEnabled'
         }
       }
       {
@@ -126,10 +128,10 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
         name: 'AppGw.In.Allow.ControlPlane'
         properties: {
           description: 'Allow inbound Control Plane (https://docs.microsoft.com/azure/application-gateway/configuration-infrastructure#network-security-groups)'
-          protocol: '*'
+          protocol: 'Tcp'
           sourcePortRange: '*'
           destinationPortRange: '65200-65535'
-          sourceAddressPrefix: '*'
+          sourceAddressPrefix: 'GatewayManager'
           destinationAddressPrefix: '*'
           access: 'Allow'
           priority: 100
@@ -180,10 +182,10 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
       {
         name: 'AppGw.Out.Allow.PrivateEndpoints'
         properties: {
-          description: 'Allow outbound traffic from the App Gateway subnet to the Private Endpoints subnet.'
-          protocol: '*'
+          description: 'Allow outbound HTTPS traffic from the App Gateway subnet to the Private Endpoints subnet (web app, Key Vault certificate).'
+          protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '*'
+          destinationPortRange: '443'
           sourceAddressPrefix: appGatewaySubnetPrefix
           destinationAddressPrefix: privateEndpointsSubnetPrefix
           access: 'Allow'
@@ -192,12 +194,12 @@ resource appGatewaySubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
         }
       }
       {
-        name: 'AppPlan.Out.Allow.AzureMonitor'
+        name: 'AppGw.Out.Allow.AzureMonitor'
         properties: {
-          description: 'Allow outbound traffic from the App Gateway subnet to Azure Monitor'
-          protocol: '*'
+          description: 'Allow outbound HTTPS traffic from the App Gateway subnet to Azure Monitor'
+          protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '*'
+          destinationPortRange: '443'
           sourceAddressPrefix: appGatewaySubnetPrefix
           destinationAddressPrefix: 'AzureMonitor'
           access: 'Allow'
@@ -232,14 +234,44 @@ resource appServiceSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01
       {
         name: 'AppPlan.Out.Allow.AzureMonitor'
         properties: {
-          description: 'Allow outbound traffic from App service to the AzureMonitor ServiceTag.'
-          protocol: '*'
+          description: 'Allow outbound HTTPS traffic from App service to the AzureMonitor ServiceTag.'
+          protocol: 'Tcp'
           sourcePortRange: '*'
-          destinationPortRange: '*'
+          destinationPortRange: '443'
           sourceAddressPrefix: appServicesSubnetPrefix
           destinationAddressPrefix: 'AzureMonitor'
           access: 'Allow'
           priority: 110
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'AppPlan.Out.Allow.PrivateEndpoints.SQL'
+        properties: {
+          description: 'Allow outbound SQL traffic (1433) from the app service subnet to the SQL private endpoint.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1433'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 120
+          direction: 'Outbound'
+        }
+      }
+      {
+        name: 'AppPlan.Out.Deny.All'
+        properties: {
+          // vnetRouteAllEnabled routes all app outbound traffic through this subnet, so this also blocks direct internet egress.
+          // Add an explicit allow rule above this one for any new dependency.
+          description: 'Deny all other outbound traffic from the app service subnet (including direct internet egress).'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: '*'
+          access: 'Deny'
+          priority: 1000
           direction: 'Outbound'
         }
       }
@@ -253,6 +285,62 @@ resource privateEndpointsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024
   location: location
   properties: {
     securityRules: [
+      {
+        name: 'PE.In.Allow.AppPlan.HTTPS'
+        properties: {
+          description: 'Allow inbound HTTPS from the App Service integration subnet to the private endpoints (Storage, Key Vault).'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 100
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Allow.AppPlan.SQL'
+        properties: {
+          description: 'Allow inbound SQL (1433) from the App Service integration subnet to the SQL private endpoint.'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '1433'
+          sourceAddressPrefix: appServicesSubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 110
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Allow.AppGw.HTTPS'
+        properties: {
+          description: 'Allow inbound HTTPS from the App Gateway subnet to the private endpoints (web app, Key Vault certificate).'
+          protocol: 'Tcp'
+          sourcePortRange: '*'
+          destinationPortRange: '443'
+          sourceAddressPrefix: appGatewaySubnetPrefix
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Allow'
+          priority: 120
+          direction: 'Inbound'
+        }
+      }
+      {
+        name: 'PE.In.Deny.All'
+        properties: {
+          description: 'Deny all other inbound traffic to the private endpoints subnet.'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: privateEndpointsSubnetPrefix
+          access: 'Deny'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
       {
         name: 'PE.Out.Deny.All'
         properties: {
@@ -278,13 +366,27 @@ resource agentsSubnetNsg 'Microsoft.Network/networkSecurityGroups@2024-10-01' = 
   properties: {
     securityRules: [
       {
+        name: 'DenyAllInBound'
+        properties: {
+          description: 'Deny inbound traffic to the build agents subnet. Note: adjust rules as needed after adding resources to the subnet'
+          protocol: '*'
+          sourcePortRange: '*'
+          destinationPortRange: '*'
+          sourceAddressPrefix: '*'
+          destinationAddressPrefix: agentsSubnetPrefix
+          access: 'Deny'
+          priority: 1000
+          direction: 'Inbound'
+        }
+      }
+      {
         name: 'DenyAllOutBound'
         properties: {
           description: 'Deny outbound traffic from the build agents subnet. Note: adjust rules as needed after adding resources to the subnet'
           protocol: '*'
           sourcePortRange: '*'
           destinationPortRange: '*'
-          sourceAddressPrefix: appGatewaySubnetPrefix
+          sourceAddressPrefix: agentsSubnetPrefix
           destinationAddressPrefix: '*'
           access: 'Deny'
           priority: 1000

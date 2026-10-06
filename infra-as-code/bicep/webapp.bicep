@@ -147,7 +147,8 @@ resource webApp 'Microsoft.Web/sites@2024-11-01' = {
   properties: {
     serverFarmId: appServicePlan.id
     virtualNetworkSubnetId: vnet::appServicesSubnet.id
-    httpsOnly: false
+    httpsOnly: true
+    publicNetworkAccess: 'Disabled'
     keyVaultReferenceIdentity: appServiceManagedIdentity.id
     hostNamesDisabled: false
     siteConfig: {
@@ -155,11 +156,35 @@ resource webApp 'Microsoft.Web/sites@2024-11-01' = {
       http20Enabled: true
       publicNetworkAccess: 'Disabled'
       alwaysOn: true
+      ftpsState: 'Disabled'
+      minTlsVersion: '1.2'
+      scmMinTlsVersion: '1.2'
     }
   }
   dependsOn: [
     appServiceSecretsUserRoleAssignmentModule
     blobDataReaderRoleAssignment
+  ]
+}
+
+// Disable basic authentication (username and password) for FTP and SCM (Kudu) publishing.
+// The app is deployed with run from package, so publishing credentials are not needed.
+resource ftpBasicAuthPolicy 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2024-11-01' = {
+  name: 'ftp'
+  parent: webApp
+  properties: {
+    allow: false
+  }
+}
+
+resource scmBasicAuthPolicy 'Microsoft.Web/sites/basicPublishingCredentialsPolicies@2024-11-01' = {
+  name: 'scm'
+  parent: webApp
+  properties: {
+    allow: false
+  }
+  dependsOn: [
+    ftpBasicAuthPolicy
   ]
 }
 
